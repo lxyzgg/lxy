@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="./lib/bootstrap.css" />
+</head>
+
+<body style="padding: 15px;">
+    <!-- 评论面板 -->
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">发表评论</h3>
+        </div>
+        <form class="panel-body" id="formAddCmt">
+            <div>评论人：</div>
+            <div class="form-group">
+                <input type="text" class="form-control" name="username" autocomplete="off" />
+            </div>
+            <div>评论内容：</div>
+            <div class="form-group">
+                <textarea class="form-control" name="content"></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">发表评论</button>
+            </div>
+        </form>
+    </div>
+    <!-- 评论列表 -->
+    <ul class="list-group" id="cmt-list">
+        <!-- <li class="list-group-item">
+            <span class="badge" style="background-color: #F0AD4E;">评论时间：2020年3月19日14:53:00</span>
+            <span class="badge" style="background-color: #5BC0DE;">评论人：哈哈</span> Item 1
+        </li> -->
+    </ul>
+    <script src="./lib/jquery.js"></script>
+    <script>
+    $(function() {
+        // 功能：
+        // 1. 发送ajax请求来获取所有评论
+        // 2. 发表评论
+
+        let BASE_URL = "http://www.liulongbin.top:3006";
+
+        // 获取所有评论
+        function getCmt() {
+            $.ajax({
+                url: BASE_URL + "/api/cmtlist",
+                success: function(res) {
+                    // console.log(res);
+
+                    // 创建li之前先清空所有ul中所有内容
+                    $("#cmt-list").empty();
+
+                    res.data.forEach((item, index) => {
+                        $(`<li class="list-group-item">
+                                <span class="badge" style="background-color: #F0AD4E;">评论时间：${item.time}</span>
+                                <span class="badge" style="background-color: #5BC0DE;">评论人：${item.username}</span> ${item.content}
+                            </li>`).appendTo($("#cmt-list"));
+                    })
+                }
+            })
+        }
+        getCmt();
+
+
+        // form表单有submit事件
+        // 点击submit提交的时候，会触发表单的submit事件
+        $("form#formAddCmt").on("submit", function(e) {
+            // 阻止表单的默认行为
+            e.preventDefault();
+            
+            // console.log(123);
+
+            // 获取输入框的内容，在发送ajax请求
+            // jQ提供了 serialize() 方法： 可以将form表单中带有name属性的值处理成查询字符串的格式
+            //  是通过form表单这个jQ对象来调用serialize() 方法 ==> "username=demo&content=demo"
+            //  注意点：
+            //   1. 表单每一项需要带上name属性
+
+            $.ajax({
+                type: "POST",
+                url: BASE_URL + "/api/addcmt",
+                /*data: {
+                    username: xxxx,
+                    content: yyy
+                }*/
+                data: $("form#formAddCmt").serialize(),
+                success: function(res) {
+                    console.log(res);
+                    getCmt();
+
+                    // 清空form中的每一项
+                    $("form#formAddCmt")[0].reset(); // 表单的DOM对象来调用reset方法
+                }
+            })
+        })
+
+
+        // 1. 提交数据
+        //  jQ的serialize() 方法将form中带有name属性的值获取到 ==> 查询字符串的格式
+        //   1. 带有name属性
+        //   2. name属性值和接口文档的参数一致
+        //  jQ的serializeArray() 收集到的数据是个数组，数组里面是对象
+        //      [{name: "username", value: "xxxx"}]
+
+        // 2. 表单有submit事件，阻止默认行为 e.preventDefault() 
+    })
+    </script>
+</body>
+
+</html>
